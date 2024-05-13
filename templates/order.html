@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Заказ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Выбранные услуги и оборудование</h1>
+        {% if services %}
+            <h3>Услуги:</h3>
+            <table>
+                {% for row_index, row in enumerate(services) %}
+                <tr>
+                    <td id="name_s_{{ row_index }}">{{ row[1] }}</td>
+                    <td id="cost_s_{{ row_index }}">{{ row[2] }}</td>
+                    <td>
+                        {% if row[1] == "Аренда сервера" or row[1] == "Аренда облачного хранилища" %}
+                        <select name="service_rental_period[{{ row_index }}]">
+                            <option value="1">1 месяц</option>
+                            <option value="3">3 месяца</option>
+                            <option value="6">6 месяцев</option>
+                            <option value="12">12 месяцев</option>
+                        </select>
+                        {% endif %}
+                    </td>
+                    <td id="res_s_{{ row_index }}"></td>
+                </tr>
+                <script>
+                    (function() {
+                        let dm = document.querySelectorAll('select[name="service_rental_period[{{ row_index }}]"]')[0];
+                        let pr = document.querySelectorAll('#res_s_{{ row_index }}')[0];
+                        let price = document.getElementById("cost_s_{{ row_index }}");
+
+                        function gg() {
+                            pr.innerHTML = parseInt(dm.value) * parseInt(price.textContent);
+                        }
+
+                        gg();
+                        dm.onchange = gg;
+                    })();
+                </script>
+                {% endfor %}
+            </table>
+            
+        {% endif %}
+        {% if equipment %}
+            <h3>Оборудование:</h3>
+            <table>
+                {% for row_index, row in enumerate(equipment) %}
+                <tr>
+                    
+                    <td id="name_{{ row_index }}">{{ row[1] }}</td>
+                    <td id="cost_{{ row_index }}">{{ row[2] }}</td>
+                    <td>
+                        <select name="equipment_rental_period[{{ row_index }}]">
+                            <option value="1">1 месяц</option>
+                            <option value="3">3 месяца</option>
+                            <option value="6">6 месяцев</option>
+                            <option value="12">12 месяцев</option>
+                        </select>
+                    </td>
+                    <td id="res_{{ row_index }}"></td>
+                </tr>
+                <script>
+                    (function() {
+                        let dm = document.querySelectorAll('select[name="equipment_rental_period[{{ row_index }}]"]')[0];
+                        let pr = document.querySelectorAll('#res_{{ row_index }}')[0];
+                        let price = document.getElementById("cost_{{ row_index }}");
+
+                        function gg() {
+                            pr.innerHTML = parseInt(dm.value) * parseInt(price.textContent);
+                        }
+
+                        gg();
+                        dm.onchange = gg;
+                    })();
+                </script>
+                {% endfor %}
+            </table>
+        {% endif %}
+        <div class="button-container">
+        <button  id="backButton" onclick="window.history.back()">Назад</button>
+        <button  id="submitButton" type="submit">Отправить заявку</button>
+        </div>
+    </div>
+</body>
+</html>

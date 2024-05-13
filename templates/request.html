@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Формирование заказа</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <form method="post">
+            <h1>Формирование заказа</h1>
+            <h3>Основные услуги:</h3>
+            <table>
+                {% for row_index, row in enumerate(data, start=0) %}
+                    <tr>
+                        <td><input type="checkbox" name="services[]" value="{{ row_index }}"></td>
+                        {% for value_index, value in enumerate(row[1:], start=0) %}
+                        <td>
+                            {{ value }}
+                            {% if (value_index == 1 and row_index==0)  or (value_index == 1 and row_index==2)%}
+                                (цена за месяц)
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <h3>Также вы можете арендовать оборудование (цена за 1 месяц):</h3>
+            <table>
+                {% for row_index, row in enumerate(data_second_table, start=0) %}
+                <tr>
+                    <td><input type="checkbox" name="equipment[]" value="{{ row_index }}"></td>
+                    {% for value in row[1:] %}
+
+                    <td>
+                        {{ value }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+            <button  id="submitButton" type="submit" disabled>Оформить заказ</button>
+        </form>
+    </div>
+
+    <script>
+        const servicesCheckboxes = document.querySelectorAll('input[name="services[]"]');
+        const equipmentCheckboxes = document.querySelectorAll('input[name="equipment[]"]');
+        const submitButton = document.getElementById('submitButton');
+
+        function toggleSubmitButton() {
+            const anyChecked = [...servicesCheckboxes, ...equipmentCheckboxes].some(checkbox => checkbox.checked);
+            submitButton.disabled = !anyChecked;
+        }
+
+        servicesCheckboxes.forEach(checkbox => checkbox.addEventListener('change', toggleSubmitButton));
+        equipmentCheckboxes.forEach(checkbox => checkbox.addEventListener('change', toggleSubmitButton));
+
+        window.addEventListener('pageshow', toggleSubmitButton);
+    </script>
+
+    
+</body>
+</html>
