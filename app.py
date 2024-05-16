@@ -1,6 +1,7 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, session
 import psycopg2
 import builtins
+import bcrypt 
 
 app = Flask(__name__)
 
@@ -46,7 +47,6 @@ def index():
     
     if request.method == 'POST':
 
-        # selected_services = request.form['services']
         selected_services = request.form.getlist('services[]')
         print(selected_services)
         selected_equipment = request.form.getlist('equipment[]')
@@ -56,21 +56,61 @@ def index():
         return render_template('order.html', services=filtered_services, equipment=filtered_equipment)
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
 
-@app.route('/home')
-def index():
-    return render_template("index.html")
+def hash_password(password, stored_password_hash=None):
+    if stored_password_hash:
+        salt = stored_password_hash[:29].encode('utf-8')  
+    else:
+        salt = bcrypt.gensalt()
 
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
 
-@app.route('/about')
-def about():
-    return render_template("about.html")
+    return hashed_password.decode('utf-8')
 
+roles = ['пользователь', 'аналитик', 'менеджер', 'администратор']
 
-@app.route('/user/<string:name>/<int:id>')
-def user(name, id):
-    return "User page: " + name + " - " + str(id)
+@app.route('/login', methods=['GET', 'POST'])
+def login_register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']
 
+        conn = get_db_connection()
+        c = conn.cursor()
+        
+        if role == 'пользователь':
+            c.execute("SELECT password_hash FROM clients WHERE login = %s", (username,))
+            result = c.fetchone()
+
+            if result:
+                stored_password_hash, stored_role = result
+
+                hashed_password = hash_password(password, stored_password_hash)
+                if hashed_password == stored_password_hash:
+                    print('Успешный вход')
+                else:
+                    print('Неверный логин, пароль или роль')
+                    # return render_template('login_register.html', roles=roles)
+            else:
+                print('Неверный логин, пароль или роль')
+                # return render_template('login_register.html', roles=roles)
+        else:    
+            c.execute("SELECT password_hash, name_role FROM staff WHERE login = %s", (username,))
+            result = c.fetchone()
+
+            if result:
+                stored_password_hash, stored_role = result
+
+                hashed_password = hash_password(password, stored_password_hash)
+                if hashed_password == stored_password_hash and role == stored_role:
+                    print('Успешный вход')
+                else:
+                    print('Неверный логин, пароль или роль')
+                    # return render_template('login_register.html', roles=roles)
+            else:
+                print('Неверный логин, пароль или роль')
+                # return render_template('login_register.html', roles=roles)
+
+    return render_template('login_register.html', roles=roles)
 
