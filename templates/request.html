@@ -7,13 +7,13 @@
 <body>
     <div class="container">
         <form method="post">
-            <h1>Формирование заказа</h1>
+            <h2>Здравствуйте, {{user_full_name}}!<br>Ваш статус: {{user_status}}</h2>
             <h3>Основные услуги:</h3>
             <table>
                 {% for row_index, row in enumerate(data, start=0) %}
                     <tr>
                         <td><input type="checkbox" name="services[]" value="{{ row_index }}"></td>
-                        {% for value_index, value in enumerate(row[1:], start=0) %}
+                        {% for value_index, value in enumerate(row[1:], start=1) %}
                         <td>
                             {{ value }}
                             {% if (value_index == 1 and row_index==0)  or (value_index == 1 and row_index==2)%}
@@ -26,7 +26,7 @@
             </table>
             <h3>Также вы можете арендовать оборудование (цена за 1 месяц):</h3>
             <table>
-                {% for row_index, row in enumerate(data_second_table, start=0) %}
+                {% for row_index, row in enumerate(data_second_table, start=1) %}
                 <tr>
                     <td><input type="checkbox" name="equipment[]" value="{{ row_index }}"></td>
                     {% for value in row[1:] %}

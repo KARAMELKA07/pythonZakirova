@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вход</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Вход</h1>
+        <form method="POST" action="{{ url_for('login_register') }}">
+            <select id="role" name="role">
+                {% for role in roles %}
+                <option value="{{ role }}">{{ role.capitalize() }}</option>
+                {% endfor %}
+            </select><br>
+            <input type="text" id="username" name="username" placeholder="Логин" required><br>
+            <input type="password" id="password" name="password" placeholder="Пароль" required><br>
+            <button type="submit">Войти</button><br>
+            <a href="{{ url_for('register') }}">Зарегистрироваться</a>
+        </form>
+    </div>
+</body>
+</html>
