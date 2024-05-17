@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Регистрация пользователя</title>
+    <title>Registration</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Регистрация пользователя</h1>
-        <form method="POST" action="{{ url_for('register') }}">
-            <!-- Здесь можно добавить дополнительные поля для ввода данных пользователя -->
-            <input type="text" id="name" name="name" placeholder="Имя" required><br>
-            <input type="email" id="email" name="email" placeholder="Email" required><br>
-            <button type="submit">Зарегистрироваться</button>
-        </form>
+    <h2>Регистрация пользователя</h2>
+    <form method="POST">
+
+        <label for="full_name">ФИО:</label><br>
+        <input type="text" id="full_name" name="full_name" required><br> 
+
+        <label for="phone_number">Номер телефона:</label><br>
+        <input type="text" id="phone_number" name="phone_number" required><br> 
+
+        <label for="username">Логин:</label><br>
+        <input type="text" id="username" name="username" required><br>
+        
+        <label for="password">Пароль (до 8 символов):</label><br>
+        <input type="password" id="password" name="password" required maxlength="8"><br> 
+        
+        <label for="confirm_password">Повторите пароль:</label><br>
+        <input type="password" id="confirm_password" name="confirm_password" required><br>
+      
+        <button type="submit">Зарегистрироваться</button><br>
+    </form>
     </div>
 </body>
 </html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Страница аналитика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+    <h1>Добро пожаловать, {{ analyst_name }}!</h1>
+    <h2>Выберите тип отчета:</h2>
+    <form method="POST">
+        <select name="report_type">
+            <option value="total_income">Общий доход ЦОДов</option>
+            <option value="centre_income">Доход каждого центра</option>
+            <option value="top_income_employees">Отчет о сотрудниках, услугах и оборудовании</option>
+        </select>
+        <button type="submit">Сформировать отчет</button>
+    </form>
+</div>
+</body>
+</html>

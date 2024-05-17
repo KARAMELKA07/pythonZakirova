@@ -140,6 +140,58 @@ def hash_password(password, stored_password_hash=None):
 
     return hashed_password.decode('utf-8')
 
+
+@app.route('/analyst/<int:staff_id>', methods=['GET', 'POST'])
+def analyst_page(staff_id):
+    if 'staff_id' not in session:
+        return redirect(url_for('login_register')) 
+    
+    staff_id = session['staff_id']
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Получение информации о сотруднике из БД
+    cur.execute("SELECT full_name FROM staff WHERE id_staff = %s", (staff_id,))
+    analyst_data = cur.fetchone()
+    analyst_name = analyst_data[0]
+
+    if request.method == 'GET':
+        return render_template("analyst.html", analyst_name=analyst_name)
+
+    if request.method == 'POST':
+        # Получение типа отчета
+        report_type = request.form['report_type']
+
+        # Вызов соответствующей функции для формирования отчета
+        if report_type == 'total_income':
+            cur.callproc('generate_total_income_report')
+        elif report_type == 'centre_income':
+            cur.execute("SELECT id_centre, centre_income FROM get_centre_income()")
+            data = cur.fetchall()
+
+            with open('centre_income_report.csv', 'w') as f:
+                # Записываем заголовок
+                f.write('id_centre, centre_income\n')
+                
+                for row in data:
+                    f.write(f"{row[0]}, {row[1]}\n")
+
+
+
+        elif report_type == 'top_income_employees':
+            cur.callproc('generate_top_income_employees_report')
+        
+        # Подтверждение изменений в БД
+        conn.commit()
+
+        # Закрытие курсора и соединения
+        cur.close()
+        conn.close()
+
+        return "Отчет сформирован успешно!"
+
+
 roles = ['пользователь', 'аналитик', 'менеджер', 'администратор']
 
 @app.route('/', methods=['GET', 'POST'])
@@ -171,15 +223,18 @@ def login_register():
                 print('Неверный логин, пароль или роль')
                 # return render_template('login_register.html', roles=roles)
         else:    
-            c.execute("SELECT password_hash, name_role FROM staff WHERE login = %s", (username,))
+            c.execute("SELECT password_hash, name_role, id_staff FROM staff WHERE login = %s", (username,))
             result = c.fetchone()
 
             if result:
-                stored_password_hash, stored_role = result
-
+                stored_password_hash, stored_role, staff_id = result
                 hashed_password = hash_password(password, stored_password_hash)
                 if hashed_password == stored_password_hash and role == stored_role:
                     print('Успешный вход')
+
+                    if role == 'аналитик':
+                        session['staff_id'] = staff_id 
+                        return redirect(url_for('analyst_page', staff_id = staff_id))
                 else:
                     print('Неверный логин, пароль или роль')
                     # return render_template('login_register.html', roles=roles)
@@ -190,8 +245,31 @@ def login_register():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # Логика для регистрации нового пользователя
-    pass
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        full_name = request.form['full_name']  
+        phone_number = request.form['phone_number']
+        
+
+        if password != confirm_password:
+            return "Passwords do not match"
+        
+        hashed_password = hash_password(password)
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO clients (full_name, phone_number, login, password, password_hash) VALUES (%s, %s, %s, %s, %s)", (full_name, phone_number, username, password, hashed_password)) 
+        print(full_name, phone_number, username, password, hashed_password)
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return "Вы зарегистрированы"
+    
+    return render_template('register.html')
+
 
 
 
