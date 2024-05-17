@@ -3,19 +3,66 @@
 <head>
     <title>Страница аналитика</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function filterClients() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("clientsTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1]; // Индекс 1 соответствует столбцу с именем клиента
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
-    <h1>Добро пожаловать, {{ analyst_name }}!</h1>
-    <h2>Выберите тип отчета:</h2>
-    <form method="POST">
-        <select name="report_type">
-            <option value="total_income">Общий доход ЦОДов</option>
-            <option value="centre_income">Доход каждого центра</option>
-            <option value="top_income_employees">Отчет о сотрудниках, услугах и оборудовании</option>
-        </select>
-        <button type="submit">Сформировать отчет</button>
-    </form>
-</div>
+        <h1>Добро пожаловать, <br>{{ analyst_name }}!</h1>
+        <h2>Выберите тип отчета:</h2>
+        <form method="POST">
+            <select name="report_type">
+                <option value="total_income">Общий доход ЦОДов</option>
+                <option value="centre_income">Доход каждого центра</option>
+                <option value="top_income_employees">Отчет о сотрудниках, услугах и оборудовании</option>
+                <option value="count_clients_by_status">Количество клиентов по статусам</option>
+            </select><br>
+            <button type="submit">Сформировать отчет</button>
+        </form>
+        <h2>Выберите таблицу:</h2>
+        <ul>
+            <a href="{{ url_for('show_table', table_name='centerinfo') }}">Информация о центрах</a><br>
+            <a href="{{ url_for('show_table', table_name='clients') }}">Клиенты</a><br>
+            <a href="{{ url_for('show_table', table_name='staff') }}">Сотрудники</a><br>
+            <a href="{{ url_for('show_table', table_name='equipment') }}">Оборудование</a><br>
+            <a href="{{ url_for('show_table', table_name='service') }}">Услуги</a><br>
+            <a href="{{ url_for('show_table', table_name='rack_utilization') }}">Утилизация стоек</a><br>
+            <a href="{{ url_for('show_table', table_name='requests') }}">Заказы</a><br>
+            <a href="{{ url_for('show_table', table_name='shedule') }}">Расписание</a>
+        </ul>
+        <h2>Поиск клиентов:</h2>
+        <input type="text" id="searchInput" onkeyup="filterClients()" placeholder="Поиск по клиентам...">
+            <table id="clientsTable">
+                
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        {% for item in client %}
+                        <td>{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+    </div>
 </body>
 </html>

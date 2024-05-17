@@ -26,7 +26,7 @@
             </table>
             <h3>Также вы можете арендовать оборудование (цена за 1 месяц):</h3>
             <table>
-                {% for row_index, row in enumerate(data_second_table, start=1) %}
+                {% for row_index, row in enumerate(data_second_table, start=0) %}
                 <tr>
                     <td><input type="checkbox" name="equipment[]" value="{{ row_index }}"></td>
                     {% for value in row[1:] %}

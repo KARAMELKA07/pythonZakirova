@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="container">
-        <form id="orderForm" name="orderForm" method="POST" action="/submit_order">
+        <form id="orderForm" name="orderForm" method="POST" >
             <h1>Выбранные услуги и оборудование</h1>
             {% if services %}
                 <h3>Услуги:</h3>
@@ -19,7 +19,8 @@
                     </tr>
                     {% for row_index, row in enumerate(services) %}
                     <tr>
-                        <td id="name_s_{{ row_index }}">{{ row[1] }}</td>
+                         
+                        <td id="name_s_{{ row_index }}"><input type="hidden" name='services[]' value='{{row[0]}}'/>{{ row[1] }}</td>
                         <td id="cost_s_{{ row_index }}">{{ row[2] }}</td>
                         <td>
                             {% if row[1] == "Аренда сервера" or row[1] == "Аренда облачного хранилища" %}
@@ -68,7 +69,7 @@
                     </tr>
                     {% for row_index, row in enumerate(equipment) %}
                     <tr>
-                        
+                        <input type="hidden" name='equipment[]' value={{row[0]}}> 
                         <td id="name_{{ row_index }}">{{ row[1] }}</td>
                         <td id="cost_{{ row_index }}">{{ row[2] }}</td>
                         <td>
@@ -105,7 +106,7 @@
                 </table>
             {% endif %}
             <div class="button-container">
-            <button  id="backButton" onclick="window.history.back()">Назад</button>
+            <button id="backButton" onclick="window.location.href = document.referrer">Назад</button>
             <button id="submitButton" type="submit">Отправить заявку</button>
             </div>
         </form>

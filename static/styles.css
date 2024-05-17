@@ -22,6 +22,51 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
+#clientsTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 10px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+#clientsTable thead {
+  background-color: #f2f2f2;
+}
+
+#clientsTable th, #clientsTable td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+#clientsTable th {
+  background-color: #f2f2f2;
+  color: #444444;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+#clientsTable tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#clientsTable tr:hover {
+  background-color: #f1f1f1;
+}
+
+#clientsTable td {
+  color: #333333;
+}
+
+#clientsTable tr:last-child td {
+  border-bottom: none;
+}
+
+
 table {
   border-collapse: separate;
   border-spacing: 0 8px;
