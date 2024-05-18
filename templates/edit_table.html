@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактирование {{ table_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; 
+            font-size: 12px; 
+            background-color: #f0f0f0;
+        }
+        .table-container {
+            width: 80%;
+            margin: 0 auto; 
+            overflow-x: auto; 
+            overflow-y: auto; 
+        }
+        table {
+            width: 100%; 
+            border-collapse: collapse;
+            text-align: left; 
+            background-color: #f2f2f2; 
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #dddddd; 
+            color: #000000; 
+        }
+        tr, td {
+            background-color: white; 
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('admin_page', staff_id=some_staff_id) }}" class="back-button">Вернуться назад к панели админа</a>
+        <h1>Редактирование таблицы {{ table_name }}</h1>
+        <h2>Добавить запись:</h2>
+        <form method="post">
+            <input type="hidden" name="action" value="add">
+            <table>
+                <thead>
+                    <tr>
+                        {% for column in column_names %}
+                            {% if column not in ['password_hash'] %}
+                                <th>{{ column }}</th>
+                            {% endif %}   
+                        {% endfor %}
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for column in column_names %}
+                            {% if column not in ['password_hash'] %}
+                                <td><input type="text" name="{{ column }}"></td>
+                            {% endif %}    
+                        {% endfor %}
+                        <td><button type="submit">Добавить</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <h2>Существующие записи:</h2>
+        <table>
+            <thead>
+                <tr>
+                    {% for column in column_names %}
+                        {% if column not in ['password_hash'] %}
+                            <th>{{ column }}</th>
+                        {% endif %}   
+                    {% endfor %}
+                    <th>Действия</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in table_data %}
+                <tr>
+                    <form method="post" style="display:inline-block;">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="primary_key_column" value="{{ primary_key_column }}">
+                        {% for column in column_names %}
+                            {% if column not in ['password_hash'] %}
+                                <td><input type="text" name="{{ column }}" value="{{ row[column_names.index(column)] }}"></td>
+                            {% endif %}
+                        {% endfor %}
+                        <input type="hidden" name="id" value="{{ row[column_names.index(primary_key_column)] }}">
+                        <td><button type="submit">Изменить</button></td>
+                    </form>
+                    <form method="post" style="display:inline-block;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="primary_key_column" value="{{ primary_key_column }}">
+                        <input type="hidden" name="id" value="{{ row[column_names.index(primary_key_column)] }}">
+                        <td><button type="submit">Удалить</button></td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

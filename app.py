@@ -367,28 +367,96 @@ def show_table(table_name):
 
 @app.route('/admin/<int:staff_id>', methods=['GET', 'POST'])
 def admin_page(staff_id):
-
     if 'staff_id' not in session:
         return redirect(url_for('login_register'))
     
     staff_id = session['staff_id']
 
-    
     conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute("SELECT id_client, full_name, status, money_spent, bonus, phone_number, id_staff FROM clients")
     clients_data_search = cur.fetchall()
 
-    cur.execute("SELECT full_name FROM staff WHERE id_staff = %s", (staff_id,))
+    cur.execute("SELECT full_name, name_cod FROM staff WHERE id_staff = %s", (staff_id,))
     admin_data = cur.fetchone()
-    admin_name = admin_data[0]
+    admin_name, admin_name_cod = admin_data
+
+    if request.method == 'POST':
+        report_type = request.form['report_type']
+
+        if report_type == 'staff_report':
+            cur.execute("SELECT * FROM get_staff_report(%s)", (admin_name_cod,))
+            data = cur.fetchall()
+            with open('staff_report.csv', 'w') as f:
+                f.write('ФИО, Должность, ЦОД, Количество заявок, Доход\n')
+                for row in data:
+                    if row[3]!=0:
+                        f.write(f"{row[0]}, {row[1]}, {row[2]}, {row[3]}, {row[4]}\n")
+
+        elif report_type == 'equipment_report':
+            center_code = ''.join(filter(str.isdigit, admin_name_cod))
+            center_name = 'ЦОД ' + center_code
+            cur.execute("SELECT * FROM get_device_report(%s)", (center_name,))
+            data = cur.fetchall()
+            with open('device_report.csv', 'w') as f:
+                f.write('Название оборудования, Цена аренды на 1 месяц, ЦОД, Количество заказов, Доход\n')
+                for row in data:
+                    if row[3]!=0:
+                        f.write(f"{row[0]}, {row[1]}, {row[2]}, {row[3]}, {row[4]}\n")
+                    else:
+                        f.write(f"НЕТ заказов по аренде {row[0]} в {center_name}\n")
+        conn.commit()
+
+        return "Отчет сформирован успешно!"
 
     cur.close()
     conn.close()
     return render_template('admin.html', clients=clients_data_search, admin_name=admin_name)
 
+@app.route('/edit/<string:table_name>', methods=['GET', 'POST'])
+def edit_table(table_name):
+    if 'staff_id' not in session:
+        return redirect(url_for('login_register'))
+    staff_id = session['staff_id']
 
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        action = request.form['action']
+        if action == 'add':
+            
+            columns = ', '.join([col for col in request.form.keys() if col not in ['action', 'id', 'primary_key_column']])
+            values = tuple(request.form.get(col) for col in request.form.keys() if col not in ['action', 'id', 'primary_key_column'])
+            placeholders = ', '.join(['%s'] * len(values))
+            query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+            cur.execute(query, values)
+        elif action == 'edit':
+            # Редактирование данных
+            primary_key_column = request.form['primary_key_column']
+            columns = [col for col in request.form.keys() if col not in ['action', 'id', 'primary_key_column']]
+            set_clause = ', '.join([f"{col} = %s" for col in columns])
+            values = tuple(request.form.get(col) for col in columns)
+            row_id = request.form['id']
+            query = f"UPDATE {table_name} SET {set_clause} WHERE {primary_key_column} = %s"
+            cur.execute(query, values + (row_id,))
+        elif action == 'delete':
+            
+            primary_key_column = request.form['primary_key_column']
+            row_id = request.form['id']
+            query = f"DELETE FROM {table_name} WHERE {primary_key_column} = %s"
+            cur.execute(query, (row_id,))
+        conn.commit()
+
+    cur.execute(f"SELECT * FROM {table_name}")
+    table_data = cur.fetchall()
+    column_names = [desc[0] for desc in cur.description]
+    primary_key_column = column_names[0]  
+
+    cur.close()
+    conn.close()
+    return render_template('edit_table.html', some_staff_id=staff_id, table_name=table_name, table_data=table_data, column_names=column_names, primary_key_column=primary_key_column)
 
 
 
