@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Страница админа</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function filterClients() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("clientsTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1]; // Индекс 1 соответствует столбцу с именем клиента
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать, <br>{{ admin_name }}!</h1>
+        <a href="{{ url_for('register_staff') }}">Зарегистрировать нового сотрудника</a>
+        <h2>Поиск клиентов:</h2>
+        <input type="text" id="searchInput" onkeyup="filterClients()" placeholder="Поиск по клиентам...">
+            <table id="clientsTable">
+                
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        {% for item in client %}
+                        <td>{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+    </div>
+</body>
+</html>

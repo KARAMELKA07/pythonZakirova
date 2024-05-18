@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+    <h2>Регистрация сотрудника</h2>
+    <form method="POST">
+        
+        <label for="full_name">ФИО:</label><br>
+        <input type="text" id="full_name_s" name="full_name_s" required><br> 
+
+        <label for="post_s">Должность:</label><br>
+        <input type="text" id="post_s" name="post_s" required><br>
+
+        <label for="salary_s">Зарплата:</label><br>
+        <input type="text" id="salary_s" name="salary_s" required><br>
+
+        <label for="email_s">Email:</label><br>
+        <input type="text" id="email_s" name="email_s" required><br>
+
+        <label for="phone_number_s">Номер телефона:</label><br>
+        <input type="text" id="phone_number_s" name="phone_number_s" required><br> 
+
+        <label for="experience_s">Опыт работы:</label><br>
+        <input type="text" id="experience_s" name="experience_s" required><br>
+
+        <label for="brief_information_s">Краткая информация:</label><br>
+        <input type="text" id="brief_information_s" name="brief_information_s" required><br>
+
+        <label for="login_s">Логин:</label><br>
+        <input type="text" id="login_s" name="login_s" required><br>
+        
+        <label for="password_s">Пароль (до 15 символов):</label><br>
+        <input type="password" id="password_s" name="password_s" required maxlength="15"><br> 
+        
+        <label for="confirm_password">Повторите пароль:</label><br>
+        <input type="password" id="confirm_password" name="confirm_password" required><br>
+
+        <label for="name_role_s">Предоставить доступ</label><br>
+        <input type="text" id="name_role_s" name="name_role_s" required><br>
+      
+        <button type="submit">Добавить сотрудника</button><br>
+    </form>
+    </div>
+</body>
+</html>

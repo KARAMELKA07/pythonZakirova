@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Страница менеджера</title>
+    <script>
+        function filterClients() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput_m");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("clientsTable_m");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1]; 
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='back2.png') }}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+    
+        h1, h2, h3, h4, h5, h6 {
+            text-align: center;
+            font-family: 'Comfortaa', cursive;
+        }
+    
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-family: Calibri, sans-serif;
+        }
+    
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+    
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    
+        th {
+            background-color: #f2f2f2;
+        }
+    
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            width: 100%;
+            max-width: 400px;
+            font-family: Calibri, sans-serif;
+        }
+    
+        input:focus {
+            outline: none;
+            border-color: #4d90fe;
+            box-shadow: 0 0 5px rgba(77, 144, 254, 0.5);
+        }
+    
+    </style>
+    
+    
+    
+</head>
+<body>
+    <div class="container">
+    <h1>Добро пожаловать, {{ manager_name }}!</h1>
+    <h2>Ваши клиенты:</h2>
+    <table >
+        <thead>
+            <tr>
+                {% for column in clients_column_names %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+                <th>Действия</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in clients_data %}
+                <tr>
+                    
+                    <form method="POST">
+                        <td>
+                            <input type="hidden" name="client_id" value="{{ row[0] }}">
+                            {{ row[0] }}
+                        </td>
+                        <td>
+                            <input type="text" name="full_name" value="{{ row[1] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="status" value="{{ row[2] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="money_spent" value="{{ row[3] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="bonus" value="{{ row[4] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="phone_number" value="{{ row[5] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="id_staff" value="{{ row[6] }}" required>
+                        </td>
+                        <td>
+                            <button type="submit" name="edit_client">Изменить</button>
+                        </td>
+                        <td>
+                            <button type="submit" name="delete_client">Удалить</button>
+                        </td>
+                    </form>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <h2>Ваши заказы:</h2>
+    <table >
+        <thead>
+            <tr>
+                {% for column in requests_column_names %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+                <th>Действия</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in requests_data %}
+                <tr>
+                    <form method="POST">
+                        <td>
+                            <input type="hidden" name="request_id" value="{{ row[0] }}">
+                            {{ row[0] }}
+                        </td>
+                        <td>
+                            <input type="text" name="id_client" value="{{ row[1] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="finalcost" value="{{ row[2] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="request_staff_id" value="{{ row[3] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="id_device" value="{{ row[4] }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="id_service" value="{{ row[5] }}" required>
+                        </td>
+                        <td>
+                            <button type="submit" name="edit_request">Изменить</button>
+                        </td>
+                        <td>
+                            <button type="submit" name="delete_request">Удалить</button>
+                        </td>
+                    </form>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Поиск клиентов:</h2>
+        <input type="text" id="searchInput_m" onkeyup="filterClients()" placeholder="Поиск по клиентам...">
+            <table id="clientsTable_m">
+                
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        {% for item in client %}
+                        <td>{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+</div>
+</body>
+</html>
