@@ -4,8 +4,8 @@ import builtins
 import bcrypt
 
 app = Flask(__name__)
-
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
 
 @app.context_processor
 def inject_enumerate():
@@ -28,13 +28,13 @@ def get_db_connection():
 
 def hash_password(password, stored_password_hash=None):
     if stored_password_hash:
-        salt = stored_password_hash[:29].encode('utf-8')  
+        salt = stored_password_hash[:29].encode('utf-8')
     else:
         salt = bcrypt.gensalt()
 
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-
     return hashed_password.decode('utf-8')
+
 
 roles = ['пользователь', 'аналитик', 'менеджер', 'администратор']
 
@@ -47,7 +47,7 @@ def login_register():
 
         conn = get_db_connection()
         c = conn.cursor()
-        
+
         if role == 'пользователь':
             c.execute("SELECT password_hash, id_client FROM clients WHERE login = %s", (username,))
             result = c.fetchone()
@@ -58,13 +58,13 @@ def login_register():
 
                 if hashed_password == stored_password_hash:
                     print('Успешный вход')
-                    session['user_id'] = user_id  
-                    return redirect(url_for('user_page', user_id = user_id))
+                    session['user_id'] = user_id
+                    return redirect(url_for('user_page', user_id=user_id))
                 else:
                     print('Неверный логин, пароль или роль')
             else:
                 print('Неверный логин, пароль или роль')
-        else:    
+        else:
             c.execute("SELECT password_hash, name_role, id_staff FROM staff WHERE login = %s", (username,))
             result = c.fetchone()
 
@@ -75,19 +75,20 @@ def login_register():
                     print('Успешный вход')
 
                     if role == 'аналитик':
-                        session['staff_id'] = staff_id 
-                        return redirect(url_for('analyst_page', staff_id = staff_id))
+                        session['staff_id'] = staff_id
+                        return redirect(url_for('analyst_page', staff_id=staff_id))
                     elif role == 'менеджер':
-                        session['staff_id'] = staff_id 
-                        return redirect(url_for('manager_page', staff_id = staff_id))
-                    else: 
-                        session['staff_id'] = staff_id 
-                        return redirect(url_for('admin_page', staff_id = staff_id))
+                        session['staff_id'] = staff_id
+                        return redirect(url_for('manager_page', staff_id=staff_id))
+                    else:
+                        session['staff_id'] = staff_id
+                        return redirect(url_for('admin_page', staff_id=staff_id))
                 else:
                     print('Неверный логин, пароль или роль')
             else:
                 print('Неверный логин, пароль или роль')
     return render_template('login_register.html', roles=roles)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -95,32 +96,33 @@ def register():
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
-        full_name = request.form['full_name']  
+        full_name = request.form['full_name']
         phone_number = request.form['phone_number']
-        
+
         if password != confirm_password:
             return "Passwords do not match"
-        
+
         hashed_password = hash_password(password)
-        
+
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("INSERT INTO clients (full_name, phone_number, login, password, password_hash) VALUES (%s, %s, %s, %s, %s)", (full_name, phone_number, username, password, hashed_password)) 
+        cur.execute("INSERT INTO clients (full_name, phone_number, login, password, password_hash) VALUES (%s, %s, %s, %s, %s)", (full_name, phone_number, username, password, hashed_password))
         conn.commit()
         cur.close()
         conn.close()
-        
+
         return "Вы зарегистрированы"
-    
+
     return render_template('register.html')
+
 
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
 def user_page(user_id):
     if 'user_id' not in session:
-        return redirect(url_for('login_register')) 
-    
+        return redirect(url_for('login_register'))
+
     user_id = session['user_id']
-    
+
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -131,7 +133,7 @@ def user_page(user_id):
     cur.execute("SELECT id_service, name_service, cost FROM service")
     rows = cur.fetchall()
     column_names_second_table = [desc[0] for desc in cur.description]
-    
+
     cur.execute("SELECT full_name, status, bonus FROM clients WHERE id_client = %s", (user_id,))
     user_data = cur.fetchone()
     user_full_name, user_status, bonus = user_data
@@ -141,15 +143,16 @@ def user_page(user_id):
 
     if request.method == 'GET':
         return render_template("request.html", data=rows, column_names=column_names, data_second_table=rows_second_table, column_names_second_table=column_names_second_table, user_full_name=user_full_name, user_status=user_status, bonus=bonus)
-    
+
     if request.method == 'POST':
         selected_services = request.form.getlist('services[]')
         selected_equipment = request.form.getlist('equipment[]')
-        
+
         filtered_services = [','.join(map(str, rows[int(index)])) for index in selected_services]
         filtered_equipment = [','.join(map(str, rows_second_table[int(index)])) for index in selected_equipment]
 
         return redirect(url_for('order', services=filtered_services, equipment=filtered_equipment, bonus=bonus))
+
 
 @app.route('/order', methods=['GET', 'POST'])
 def order():
@@ -161,8 +164,9 @@ def order():
         selected_equipment = request.form.getlist('equipment[]')
         service_rental_period = request.form.getlist('service_rental_period[]')
         equipment_rental_period = request.form.getlist('equipment_rental_period[]')
-        return redirect(url_for('submit_order', services=selected_services, equipment=selected_equipment, bonus=bonus, service_rental_period=service_rental_period, equipment_rental_period= equipment_rental_period))
+        return redirect(url_for('submit_order', services=selected_services, equipment=selected_equipment, bonus=bonus, service_rental_period=service_rental_period, equipment_rental_period=equipment_rental_period))
     return render_template('order.html', services=services, equipment=equipment, bonus=bonus)
+
 
 @app.route('/submit_order', methods=['GET', 'POST'])
 def submit_order():
@@ -185,7 +189,7 @@ def submit_order():
     rows = cur.fetchall()
     services_data = []
     for i, index in enumerate(selected_services):
-        service_index = int(index)-1
+        service_index = int(index) - 1
         service_id = rows[service_index][0]
         service_name = rows[service_index][1]
         base_cost = rows[service_index][2]
@@ -197,7 +201,7 @@ def submit_order():
     rows_second_table = cur.fetchall()
     equipment_data = []
     for i, index in enumerate(selected_equipment):
-        equipment_index = int(index)-1
+        equipment_index = int(index) - 1
         equipment_id = rows_second_table[equipment_index][0]
         equipment_name = rows_second_table[equipment_index][1]
         base_cost = rows_second_table[equipment_index][2]
@@ -216,6 +220,7 @@ def submit_order():
     conn.close()
 
     return 'Order submitted successfully!'
+
 
 @app.route('/analyst/<int:staff_id>', methods=['GET', 'POST'])
 def analyst_page(staff_id):
@@ -280,6 +285,7 @@ def analyst_page(staff_id):
 
     return render_template("analyst.html", analyst_name=analyst_name, clients=clients_data)
 
+
 @app.route('/manager/<int:staff_id>', methods=['GET', 'POST'])
 def manager_page(staff_id):
     if 'staff_id' not in session:
@@ -332,7 +338,7 @@ def manager_page(staff_id):
             id_service = request.form['id_service']
             cur.execute("""
                 UPDATE requests 
-                SET id_client = %s, finalcost = %s, id_staff = %s, id_device = %s, id_service = %s, 
+                SET id_client = %s, finalcost = %s, id_staff = %s, id_device = %s, id_service = %s 
                 WHERE id_request = %s
             """, (id_client, finalcost, request_staff_id, id_device, id_service, request_id))
         elif 'delete_request' in request.form:
@@ -347,12 +353,13 @@ def manager_page(staff_id):
     
     return render_template("manager.html", manager_name=manager_name, clients=clients_data_search, clients_data=clients_data, clients_column_names=clients_column_names, requests_data=requests_data, requests_column_names=requests_column_names)
 
+
 def get_table_data(table_name):
     conn = get_db_connection()
     cur = conn.cursor()
-    if table_name=='clients':
+    if table_name == 'clients':
         cur.execute(f"SELECT id_client, full_name, status, money_spent, bonus, phone_number, id_staff FROM {table_name}")
-    elif table_name=='staff':
+    elif table_name == 'staff':
         cur.execute(f"SELECT id_staff, full_name, post, salary, email, phone_number, experience, name_cod, brief_information, name_role FROM {table_name}")
     else:
         cur.execute(f"SELECT * FROM {table_name}")
@@ -362,10 +369,12 @@ def get_table_data(table_name):
     conn.close()
     return rows, column_names
 
+
 @app.route('/show_table/<table_name>')
 def show_table(table_name):
     table_data, column_names = get_table_data(table_name)
     return render_template('table_for_analyst.html', table_name=table_name, table_data=table_data, column_names=column_names)
+
 
 @app.route('/admin/<int:staff_id>', methods=['GET', 'POST'])
 def admin_page(staff_id):
@@ -393,7 +402,7 @@ def admin_page(staff_id):
             with open('staff_report.csv', 'w') as f:
                 f.write('ФИО, Должность, ЦОД, Количество заявок, Доход\n')
                 for row in data:
-                    if row[3]!=0:
+                    if row[3] != 0:
                         f.write(f"{row[0]}, {row[1]}, {row[2]}, {row[3]}, {row[4]}\n")
 
         elif report_type == 'equipment_report':
@@ -404,7 +413,7 @@ def admin_page(staff_id):
             with open('device_report.csv', 'w') as f:
                 f.write('Название оборудования, Цена аренды на 1 месяц, ЦОД, Количество заказов, Доход\n')
                 for row in data:
-                    if row[3]!=0:
+                    if row[3] != 0:
                         f.write(f"{row[0]}, {row[1]}, {row[2]}, {row[3]}, {row[4]}\n")
                     else:
                         f.write(f"НЕТ заказов по аренде {row[0]} в {center_name}\n")
@@ -416,10 +425,12 @@ def admin_page(staff_id):
     conn.close()
     return render_template('admin.html', clients=clients_data_search, admin_name=admin_name)
 
+
 @app.route('/edit/<string:table_name>', methods=['GET', 'POST'])
 def edit_table(table_name):
     if 'staff_id' not in session:
         return redirect(url_for('login_register'))
+    
     staff_id = session['staff_id']
 
     conn = get_db_connection()
@@ -428,14 +439,12 @@ def edit_table(table_name):
     if request.method == 'POST':
         action = request.form['action']
         if action == 'add':
-            
             columns = ', '.join([col for col in request.form.keys() if col not in ['action', 'id', 'primary_key_column']])
             values = tuple(request.form.get(col) for col in request.form.keys() if col not in ['action', 'id', 'primary_key_column'])
             placeholders = ', '.join(['%s'] * len(values))
             query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
             cur.execute(query, values)
         elif action == 'edit':
-            # Редактирование данных
             primary_key_column = request.form['primary_key_column']
             columns = [col for col in request.form.keys() if col not in ['action', 'id', 'primary_key_column']]
             set_clause = ', '.join([f"{col} = %s" for col in columns])
@@ -444,7 +453,6 @@ def edit_table(table_name):
             query = f"UPDATE {table_name} SET {set_clause} WHERE {primary_key_column} = %s"
             cur.execute(query, values + (row_id,))
         elif action == 'delete':
-            
             primary_key_column = request.form['primary_key_column']
             row_id = request.form['id']
             query = f"DELETE FROM {table_name} WHERE {primary_key_column} = %s"
@@ -459,7 +467,6 @@ def edit_table(table_name):
     cur.close()
     conn.close()
     return render_template('edit_table.html', some_staff_id=staff_id, table_name=table_name, table_data=table_data, column_names=column_names, primary_key_column=primary_key_column)
-
 
 
 @app.route('/register_staff', methods=['GET', 'POST'])
@@ -503,3 +510,4 @@ def register_staff():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
