@@ -161,9 +161,8 @@ def order():
         selected_equipment = request.form.getlist('equipment[]')
         service_rental_period = request.form.getlist('service_rental_period[]')
         equipment_rental_period = request.form.getlist('equipment_rental_period[]')
-        print('161', service_rental_period)
         return redirect(url_for('submit_order', services=selected_services, equipment=selected_equipment, bonus=bonus, service_rental_period=service_rental_period, equipment_rental_period= equipment_rental_period))
-    return render_template('order.html', services=services, equipment=equipment, bonus=0)
+    return render_template('order.html', services=services, equipment=equipment, bonus=bonus)
 
 @app.route('/submit_order', methods=['GET', 'POST'])
 def submit_order():
@@ -175,8 +174,7 @@ def submit_order():
     selected_equipment = request.args.getlist('equipment')
     service_rental_period = request.args.getlist('service_rental_period')
     equipment_rental_period = request.args.getlist('equipment_rental_period')
-    print('172', service_rental_period)
-
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -186,29 +184,33 @@ def submit_order():
     cur.execute("SELECT id_service, name_service, cost FROM service")
     rows = cur.fetchall()
     services_data = []
-    for index in selected_services:
+    for i, index in enumerate(selected_services):
         service_index = int(index)-1
         service_id = rows[service_index][0]
         service_name = rows[service_index][1]
-        service_cost = int(rows[service_index][2]*(100 - bonus) / 100)
-        services_data.append((service_id, service_name, service_cost))
-  
+        base_cost = rows[service_index][2]
+        rental_period = int(service_rental_period[i])
+        final_cost = int(base_cost * rental_period * (100 - bonus) / 100)
+        services_data.append((service_id, service_name, final_cost))
+
     cur.execute("SELECT id_device, name_device, cost FROM equipment")
     rows_second_table = cur.fetchall()
     equipment_data = []
-    for index in selected_equipment:
+    for i, index in enumerate(selected_equipment):
         equipment_index = int(index)-1
         equipment_id = rows_second_table[equipment_index][0]
         equipment_name = rows_second_table[equipment_index][1]
-        equipment_cost = int(rows_second_table[equipment_index][2]*(100 - bonus) / 100)
-        equipment_data.append((equipment_id, equipment_name, equipment_cost))
-    
-    #for service_id, service_name, service_cost in services_data:
-        #cur.execute("INSERT INTO requests (id_client, finalcost, id_service) VALUES (%s, %s, %s)", (user_id, service_cost, service_id))
+        base_cost = rows_second_table[equipment_index][2]
+        rental_period = int(equipment_rental_period[i])
+        final_cost = int(base_cost * rental_period * (100 - bonus) / 100)
+        equipment_data.append((equipment_id, equipment_name, final_cost))
 
-    #for equipment_id, equipment_name, equipment_cost in equipment_data:
-        #cur.execute("INSERT INTO requests (id_client, finalcost, id_device) VALUES (%s, %s, %s)", (user_id, equipment_cost, equipment_id))
-        
+    for service_id, service_name, final_cost in services_data:
+        cur.execute("INSERT INTO requests (id_client, finalcost, id_service) VALUES (%s, %s, %s)", (user_id, final_cost, service_id))
+
+    for equipment_id, equipment_name, final_cost in equipment_data:
+        cur.execute("INSERT INTO requests (id_client, finalcost, id_device) VALUES (%s, %s, %s)", (user_id, final_cost, equipment_id))
+   
     conn.commit()
     cur.close()
     conn.close()

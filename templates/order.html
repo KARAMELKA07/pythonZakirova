@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="container">
-        <form id="orderForm" name="orderForm" method="POST" >
+        <form id="orderForm" name="orderForm" method="POST">
             <h1>Выбранные услуги и оборудование</h1>
             {% if services %}
                 <h3>Услуги:</h3>
@@ -15,48 +15,55 @@
                         <th>Наименование</th>
                         <th>Цена</th>
                         <th>Период аренды</th>
-                        <th>Цена для вас( -{{bonus}}% )</th>
+                        <th>Цена для вас ( -{{bonus}}% )</th>
                     </tr>
                     {% for row_index, row in enumerate(services) %}
                     <tr>
-                         
-                        <td id="name_s_{{ row_index }}"><input type="hidden" name='services[]' value='{{row[0]}}'/>{{ row[1] }}</td>
+                        <td id="name_s_{{ row_index }}">
+                            <input type="hidden" name="services[]" value="{{ row[0] }}"/>{{ row[1] }}
+                        </td>
                         <td id="cost_s_{{ row_index }}">{{ row[2] }}</td>
                         <td>
                             {% if row[1] == "Аренда сервера" or row[1] == "Аренда облачного хранилища" %}
-                            <select name="service_rental_period[{{ row_index }}]">
+                            <select name="service_rental_period[]" id="service_rental_period_{{ row_index }}">
                                 <option value="1">1 месяц</option>
                                 <option value="3">3 месяца</option>
                                 <option value="6">6 месяцев</option>
                                 <option value="12">12 месяцев</option>
                             </select>
                             {% else %}
+                            <input type="hidden" name="service_rental_period[]" value="1" id="service_rental_period_{{ row_index }}">
+                            
                             {% endif %}
                         </td>
                         <td id="res_s_{{ row_index }}" data-bonus="{{ bonus }}"></td>
                     </tr>
                     <script>
-                        (function() {
-                            let dm = document.querySelectorAll('select[name="service_rental_period[{{ row_index }}]"]');
-                            let pr = document.querySelectorAll('#res_s_{{ row_index }}')[0];
-                            let price = document.getElementById("cost_s_{{ row_index }}");
-                            let bonus = parseFloat(pr.getAttribute('data-bonus'));
-                
-                            if (dm.length > 0) {
-                                dm = dm[0];
-                                function gg() {
-                                    pr.innerHTML = (parseInt(dm.value) * parseInt(price.textContent)) * (100 - bonus) / 100;
+                        document.addEventListener("DOMContentLoaded", function() {
+                            (function() {
+                                let selectElem = document.getElementById(`service_rental_period_{{ row_index }}`);
+                                let resultElem = document.getElementById(`res_s_{{ row_index }}`);
+                                let priceElem = document.getElementById(`cost_s_{{ row_index }}`);
+                                let bonus = parseFloat(resultElem.getAttribute('data-bonus'));
+
+                                function updatePrice() {
+                                    let rentalPeriod = parseInt(selectElem.value);
+                                    let basePrice = parseInt(priceElem.textContent);
+                                    let discountedPrice = basePrice * rentalPeriod * (100 - bonus) / 100;
+                                    resultElem.innerHTML = discountedPrice.toFixed(2);
                                 }
-                
-                                gg();
-                                dm.onchange = gg;
-                            } else {
-                                pr.innerHTML = parseInt(price.textContent) * (100 - bonus) / 100;
-                            }
-                        })();
+
+                                if (selectElem.tagName === 'SELECT') {
+                                    updatePrice();
+                                    selectElem.addEventListener('change', updatePrice);
+                                } else {
+                                    updatePrice();
+                                }
+                            })();
+                        });
                     </script>
                     {% endfor %}
-                </table>            
+                </table>
             {% endif %}
             {% if equipment %}
                 <h3>Оборудование:</h3>
@@ -65,15 +72,15 @@
                         <th>Наименование</th>
                         <th>Цена</th>
                         <th>Период аренды</th>
-                        <th>Цена для вас( -{{bonus}}% )</th>
+                        <th>Цена для вас ( -{{bonus}}% )</th>
                     </tr>
                     {% for row_index, row in enumerate(equipment) %}
                     <tr>
-                        <input type="hidden" name='equipment[]' value={{row[0]}}> 
+                        <input type="hidden" name="equipment[]" value="{{ row[0] }}">
                         <td id="name_{{ row_index }}">{{ row[1] }}</td>
                         <td id="cost_{{ row_index }}">{{ row[2] }}</td>
                         <td>
-                            <select name="equipment_rental_period[{{ row_index }}]">
+                            <select name="equipment_rental_period[]" id="equipment_rental_period_{{ row_index }}">
                                 <option value="1">1 месяц</option>
                                 <option value="3">3 месяца</option>
                                 <option value="6">6 месяцев</option>
@@ -83,31 +90,30 @@
                         <td id="res_{{ row_index }}" data-bonus="{{ bonus }}"></td>
                     </tr>
                     <script>
-                        (function() {
-                            let dm = document.querySelectorAll('select[name="equipment_rental_period[{{ row_index }}]"]');
-                            let pr = document.querySelectorAll('#res_{{ row_index }}')[0];
-                            let price = document.getElementById("cost_{{ row_index }}");
-                            let bonus = parseFloat(pr.getAttribute('data-bonus'));
-                
-                            if (dm.length > 0) {
-                                dm = dm[0];
-                                function gg() {
-                                    pr.innerHTML = (parseInt(dm.value) * parseInt(price.textContent)) * (100 - bonus) / 100;
+                        document.addEventListener("DOMContentLoaded", function() {
+                            (function() {
+                                let selectElem = document.getElementById(`equipment_rental_period_{{ row_index }}`);
+                                let resultElem = document.getElementById(`res_{{ row_index }}`);
+                                let priceElem = document.getElementById(`cost_{{ row_index }}`);
+                                let bonus = parseFloat(resultElem.getAttribute('data-bonus'));
+
+                                function updatePrice() {
+                                    let rentalPeriod = parseInt(selectElem.value);
+                                    let basePrice = parseInt(priceElem.textContent);
+                                    let discountedPrice = basePrice * rentalPeriod * (100 - bonus) / 100;
+                                    resultElem.innerHTML = discountedPrice.toFixed(2);
                                 }
-                
-                                gg();
-                                dm.onchange = gg;
-                            } else {
-                                pr.innerHTML = parseInt(price.textContent) * (100 - bonus) / 100;
-                            }
-                        })();
+
+                                updatePrice();
+                                selectElem.addEventListener('change', updatePrice);
+                            })();
+                        });
                     </script>
                     {% endfor %}
                 </table>
             {% endif %}
-            
+
             <button id="submitButton" type="submit">Отправить заявку</button>
-            
         </form>
     </div>
 </body>
